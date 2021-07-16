@@ -83,9 +83,7 @@ class AppListFragment : BaseListControllerFragment<FragmentAppListBinding>(), Se
                 startActivity(intent)
             }
             setDiffCallback(AppListDiffUtil())
-            if (!hasObservers()) {
-                setHasStableIds(true)
-            }
+            setHasStableIds(true)
         }
 
         binding.apply {

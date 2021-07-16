@@ -7,14 +7,10 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.viewModels
-import androidx.core.view.forEach
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupWithNavController
 import com.absinthe.libchecker.BaseActivity
 import com.absinthe.libchecker.R
 import com.absinthe.libchecker.app.Global
@@ -23,20 +19,20 @@ import com.absinthe.libchecker.constant.GlobalValues
 import com.absinthe.libchecker.constant.OnceTag
 import com.absinthe.libchecker.database.AppItemRepository
 import com.absinthe.libchecker.databinding.ActivityMainBinding
+import com.absinthe.libchecker.hook.HookNavigationViewItemSelectListener
 import com.absinthe.libchecker.utils.FileUtils
 import com.absinthe.libchecker.utils.LCAppUtils
 import com.absinthe.libchecker.utils.extensions.unsafeLazy
 import com.absinthe.libchecker.viewmodel.HomeViewModel
 import com.google.android.material.animation.AnimationUtils
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.analytics.EventProperties
 import jonathanfinerty.once.Once
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import java.lang.ref.WeakReference
 
 
 class MainActivity : BaseActivity() {
@@ -57,8 +53,7 @@ class MainActivity : BaseActivity() {
             )
             .build()
     }
-
-    private var clickBottomItemFlag = false
+    private val doubleClickArray = arrayOf(0L, 0L)
     private var currentFragmentId = R.id.app_list_fragment
 
     override fun setViewBinding(): ViewGroup {
@@ -113,8 +108,11 @@ class MainActivity : BaseActivity() {
         supportActionBar?.title = LCAppUtils.setTitle(this)
 
         navController?.let { controller ->
-            setupWithNavController(binding.navView, controller)
-            binding.navView.setOnClickListener { /*Do nothing*/ }
+            binding.navView.apply {
+                setupWithNavController(controller)
+                hookNavigationBarView(this)
+                setOnClickListener { /*Do nothing*/ }
+            }
         }
     }
 
@@ -193,52 +191,27 @@ class MainActivity : BaseActivity() {
         FileUtils.delete(File(externalCacheDir, "temp.apk"))
     }
 
+    private fun hookNavigationBarView(navView: BottomNavigationView) {
+        NavigationBarView::class.java.getDeclaredField("selectedListener").apply {
+            isAccessible = true
+            val origin = get(navView) as NavigationBarView.OnItemSelectedListener
+            set(navView, HookNavigationViewItemSelectListener(origin, {
+                performClickNavigationItem(it)
+            }))
+        }
+    }
+
     private fun performClickNavigationItem(fragmentId: Int) {
         if (currentFragmentId == fragmentId) {
-            if (!clickBottomItemFlag) {
-                clickBottomItemFlag = true
+            System.arraycopy(doubleClickArray, 1, doubleClickArray, 0, doubleClickArray.size - 1)
+            doubleClickArray[doubleClickArray.size - 1] = System.currentTimeMillis()
 
-                lifecycleScope.launch {
-                    delay(200)
-                    clickBottomItemFlag = false
+            if (System.currentTimeMillis() - doubleClickArray[0] < 250L) {
+                if (appViewModel.controller?.isAllowRefreshing() == true) {
+                    appViewModel.controller?.onReturnTop()
                 }
-            } else if (appViewModel.controller?.isAllowRefreshing() == true) {
-                appViewModel.controller?.onReturnTop()
             }
         }
         currentFragmentId = fragmentId
-    }
-
-    private fun setupWithNavController(
-        navigationBarView: NavigationBarView,
-        navController: NavController
-    ) {
-        navigationBarView.setOnItemSelectedListener { item ->
-            performClickNavigationItem(item.itemId)
-            NavigationUI.onNavDestinationSelected(
-                item,
-                navController
-            )
-        }
-        val weakReference = WeakReference(navigationBarView)
-        navController.addOnDestinationChangedListener(
-            object : NavController.OnDestinationChangedListener {
-                override fun onDestinationChanged(
-                    controller: NavController,
-                    destination: NavDestination,
-                    arguments: Bundle?
-                ) {
-                    val view = weakReference.get()
-                    if (view == null) {
-                        navController.removeOnDestinationChangedListener(this)
-                        return
-                    }
-                    view.menu.forEach { item ->
-                        if (destination.hierarchy.any { h -> h.id == item.itemId }) {
-                            item.isChecked = true
-                        }
-                    }
-                }
-            })
     }
 }

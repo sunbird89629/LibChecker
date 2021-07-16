@@ -113,9 +113,7 @@ class LibReferenceFragment : BaseListControllerFragment<FragmentLibReferenceBind
                     it.gravity = Gravity.CENTER
                 }
             })
-            if (!hasObservers()) {
-                setHasStableIds(true)
-            }
+            setHasStableIds(true)
         }
 
         homeViewModel.apply {

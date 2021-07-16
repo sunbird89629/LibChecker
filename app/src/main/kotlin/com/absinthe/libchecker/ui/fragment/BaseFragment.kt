@@ -26,8 +26,12 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
     ): View? {
         Timber.d("${javaClass.simpleName} ==> onCreateView")
         _binding = initBinding(inflater)
-        init()
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        init()
     }
 
     abstract fun initBinding(inflater: LayoutInflater): T

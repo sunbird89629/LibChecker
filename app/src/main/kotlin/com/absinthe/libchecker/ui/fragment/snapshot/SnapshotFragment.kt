@@ -177,9 +177,7 @@ class SnapshotFragment : BaseListControllerFragment<FragmentSnapshotBinding>() {
                     )
                 startActivity(intent)
             }
-            if (!hasObservers()) {
-                setHasStableIds(true)
-            }
+            setHasStableIds(true)
         }
 
         binding.apply {

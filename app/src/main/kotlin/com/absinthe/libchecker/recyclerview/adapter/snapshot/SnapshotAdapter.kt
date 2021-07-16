@@ -148,14 +148,6 @@ class SnapshotAdapter(val lifecycleScope: LifecycleCoroutineScope) : BaseQuickAd
         }
     }
 
-    override fun getItemId(position: Int): Long {
-        return if (data.isEmpty()) {
-            0
-        } else {
-            data[position].hashCode().toLong()
-        }
-    }
-
     fun release() {
         if (loadIconJob?.isActive == true) {
             loadIconJob?.cancel()
