@@ -2,22 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_app_list"
+        android:id="@+id/app_list_fragment"
         android:icon="@drawable/ic_app_list"
         android:title="@string/title_app_list" />
 
     <item
-        android:id="@+id/navigation_classify"
+        android:id="@+id/lib_reference_fragment"
         android:icon="@drawable/ic_classify"
         android:title="@string/title_statistics" />
 
     <item
-        android:id="@+id/navigation_snapshot"
+        android:id="@+id/snapshot_fragment"
         android:icon="@drawable/ic_snapshot"
         android:title="@string/title_snapshot" />
 
     <item
-        android:id="@+id/navigation_settings"
+        android:id="@+id/settings_fragment"
         android:icon="@drawable/ic_settings"
         android:title="@string/title_settings" />
 

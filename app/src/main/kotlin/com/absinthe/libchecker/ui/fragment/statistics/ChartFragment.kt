@@ -5,7 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.view.HapticFeedbackConstants
-import android.view.View
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
@@ -42,7 +42,7 @@ private const val TYPE_ABI = 0
 private const val TYPE_KOTLIN = 1
 private const val TYPE_TARGET_API = 2
 
-class ChartFragment : BaseFragment<FragmentPieChartBinding>(R.layout.fragment_pie_chart),
+class ChartFragment : BaseFragment<FragmentPieChartBinding>(),
     OnChartValueSelectedListener,
     MaterialButtonToggleGroup.OnButtonCheckedListener {
 
@@ -53,8 +53,8 @@ class ChartFragment : BaseFragment<FragmentPieChartBinding>(R.layout.fragment_pi
     private var mDialog: ClassifyBottomSheetDialogFragment? = null
     private lateinit var chartView: ViewGroup
 
-    override fun initBinding(view: View): FragmentPieChartBinding =
-        FragmentPieChartBinding.bind(view)
+    override fun initBinding(inflater: LayoutInflater): FragmentPieChartBinding =
+        FragmentPieChartBinding.inflate(inflater)
 
     override fun init() {
         chartView = generatePieChartView()

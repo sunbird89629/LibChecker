@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/app_list_fragment">
+
+    <fragment
+        android:id="@+id/app_list_fragment"
+        android:name="com.absinthe.libchecker.ui.fragment.applist.AppListFragment"
+        android:label="fragment_app_list"
+        tools:layout="@layout/fragment_app_list" />
+    <fragment
+        android:id="@+id/lib_reference_fragment"
+        android:name="com.absinthe.libchecker.ui.fragment.statistics.LibReferenceFragment"
+        android:label="fragment_lib_reference"
+        tools:layout="@layout/fragment_lib_reference" />
+    <fragment
+        android:id="@+id/snapshot_fragment"
+        android:name="com.absinthe.libchecker.ui.fragment.snapshot.SnapshotFragment"
+        android:label="fragment_snapshot"
+        tools:layout="@layout/fragment_snapshot" />
+    <fragment
+        android:id="@+id/settings_fragment"
+        android:name="com.absinthe.libchecker.ui.fragment.settings.SettingsFragment"
+        android:label="SettingsFragment" />
+
+    <action
+        android:id="@+id/action_app_list_fragment"
+        app:destination="@id/app_list_fragment"
+        app:popUpTo="@id/app_list_fragment"
+        app:popUpToInclusive="true"
+        app:popUpToSaveState="true"
+        app:restoreState="true" />
+    <action
+        android:id="@+id/action_lib_reference_fragment"
+        app:destination="@id/lib_reference_fragment"
+        app:popUpTo="@id/lib_reference_fragment"
+        app:popUpToInclusive="true"
+        app:popUpToSaveState="true"
+        app:restoreState="true" />
+    <action
+        android:id="@+id/action_snapshot_fragment"
+        app:destination="@id/snapshot_fragment"
+        app:popUpTo="@id/snapshot_fragment"
+        app:popUpToInclusive="true"
+        app:popUpToSaveState="true"
+        app:restoreState="true" />
+    <action
+        android:id="@+id/action_settings_fragment"
+        app:destination="@id/settings_fragment"
+        app:popUpTo="@id/settings_fragment"
+        app:popUpToInclusive="true"
+        app:popUpToSaveState="true"
+        app:restoreState="true" />
+</navigation>

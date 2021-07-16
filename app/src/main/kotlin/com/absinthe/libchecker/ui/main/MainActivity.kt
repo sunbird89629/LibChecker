@@ -7,10 +7,14 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.viewModels
-import androidx.fragment.app.Fragment
+import androidx.core.view.forEach
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
 import com.absinthe.libchecker.BaseActivity
 import com.absinthe.libchecker.R
 import com.absinthe.libchecker.app.Global
@@ -19,15 +23,12 @@ import com.absinthe.libchecker.constant.GlobalValues
 import com.absinthe.libchecker.constant.OnceTag
 import com.absinthe.libchecker.database.AppItemRepository
 import com.absinthe.libchecker.databinding.ActivityMainBinding
-import com.absinthe.libchecker.ui.fragment.applist.AppListFragment
-import com.absinthe.libchecker.ui.fragment.settings.SettingsFragment
-import com.absinthe.libchecker.ui.fragment.snapshot.SnapshotFragment
-import com.absinthe.libchecker.ui.fragment.statistics.LibReferenceFragment
 import com.absinthe.libchecker.utils.FileUtils
 import com.absinthe.libchecker.utils.LCAppUtils
-import com.absinthe.libchecker.utils.extensions.setCurrentItem
-import com.absinthe.libchecker.viewmodel.*
+import com.absinthe.libchecker.utils.extensions.unsafeLazy
+import com.absinthe.libchecker.viewmodel.HomeViewModel
 import com.google.android.material.animation.AnimationUtils
+import com.google.android.material.navigation.NavigationBarView
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.analytics.EventProperties
 import jonathanfinerty.once.Once
@@ -35,14 +36,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
+import java.lang.ref.WeakReference
 
-const val PAGE_TRANSFORM_DURATION = 300L
 
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var clickBottomItemFlag = false
     private val appViewModel by viewModels<HomeViewModel>()
+    private val navController by unsafeLazy {
+        (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment)?.navController
+    }
+    private val navOptions by unsafeLazy {
+        NavOptions.Builder()
+            .setLaunchSingleTop(true)
+            .setRestoreState(true)
+            .setPopUpTo(
+                navController!!.graph.startDestinationId,
+                inclusive = false,
+                saveState = true
+            )
+            .build()
+    }
+
+    private var clickBottomItemFlag = false
+    private var currentFragmentId = R.id.app_list_fragment
 
     override fun setViewBinding(): ViewGroup {
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -95,67 +112,9 @@ class MainActivity : BaseActivity() {
         (binding.root as ViewGroup).bringChildToFront(binding.appbar)
         supportActionBar?.title = LCAppUtils.setTitle(this)
 
-        binding.apply {
-            viewpager.apply {
-                adapter = object : FragmentStateAdapter(this@MainActivity) {
-                    override fun getItemCount(): Int {
-                        return 4
-                    }
-
-                    override fun createFragment(position: Int): Fragment {
-                        return when (position) {
-                            0 -> AppListFragment()
-                            1 -> LibReferenceFragment()
-                            2 -> SnapshotFragment()
-                            else -> SettingsFragment()
-                        }
-                    }
-                }
-
-                // 当ViewPager切换页面时，改变底部导航栏的状态
-                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
-                        super.onPageSelected(position)
-                        binding.navView.menu.getItem(position).isChecked = true
-                    }
-                })
-
-                //禁止左右滑动
-                isUserInputEnabled = false
-                offscreenPageLimit = 2
-            }
-
-            // 当 ViewPager 切换页面时，改变 ViewPager 的显示
-            navView.setOnNavigationItemSelectedListener {
-
-                fun performClickNavigationItem(index: Int) {
-                    if (binding.viewpager.currentItem != index) {
-                        if (!binding.viewpager.isFakeDragging) {
-                            binding.viewpager.setCurrentItem(index, PAGE_TRANSFORM_DURATION)
-                        }
-                    } else {
-                        if (!clickBottomItemFlag) {
-                            clickBottomItemFlag = true
-
-                            lifecycleScope.launch {
-                                delay(200)
-                                clickBottomItemFlag = false
-                            }
-                        } else if (appViewModel.controller?.isAllowRefreshing() == true) {
-                            appViewModel.controller?.onReturnTop()
-                        }
-                    }
-                }
-
-                when (it.itemId) {
-                    R.id.navigation_app_list -> performClickNavigationItem(0)
-                    R.id.navigation_classify -> performClickNavigationItem(1)
-                    R.id.navigation_snapshot -> performClickNavigationItem(2)
-                    R.id.navigation_settings -> performClickNavigationItem(3)
-                }
-                true
-            }
-            navView.setOnClickListener { /*Do nothing*/ }
+        navController?.let { controller ->
+            setupWithNavController(binding.navView, controller)
+            binding.navView.setOnClickListener { /*Do nothing*/ }
         }
     }
 
@@ -181,12 +140,30 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handleIntentFromShortcuts(intent: Intent) {
-        when(intent.action) {
-            Constants.ACTION_APP_LIST -> binding.viewpager.setCurrentItem(0, false)
-            Constants.ACTION_STATISTICS -> binding.viewpager.setCurrentItem(1, false)
-            Constants.ACTION_SNAPSHOT -> binding.viewpager.setCurrentItem(2, false)
+        if (navController == null) {
+            return
         }
-        Analytics.trackEvent(Constants.Event.LAUNCH_ACTION, EventProperties().set("Action", intent.action))
+        when (intent.action) {
+            Constants.ACTION_APP_LIST -> navController?.navigate(
+                R.id.app_list_fragment,
+                null,
+                navOptions
+            )
+            Constants.ACTION_STATISTICS -> navController?.navigate(
+                R.id.lib_reference_fragment,
+                null,
+                navOptions
+            )
+            Constants.ACTION_SNAPSHOT -> navController?.navigate(
+                R.id.snapshot_fragment,
+                null,
+                navOptions
+            )
+        }
+        Analytics.trackEvent(
+            Constants.Event.LAUNCH_ACTION,
+            EventProperties().set("Action", intent.action)
+        )
     }
 
     private fun initAllApplicationInfoItems() {
@@ -206,7 +183,7 @@ class MainActivity : BaseActivity() {
 
             reloadAppsFlag.observe(this@MainActivity) {
                 if (it) {
-                    binding.viewpager.setCurrentItem(0, true)
+                    navController?.navigate(R.id.app_list_fragment, null, navOptions)
                 }
             }
         }
@@ -214,5 +191,54 @@ class MainActivity : BaseActivity() {
 
     private fun clearApkCache() {
         FileUtils.delete(File(externalCacheDir, "temp.apk"))
+    }
+
+    private fun performClickNavigationItem(fragmentId: Int) {
+        if (currentFragmentId == fragmentId) {
+            if (!clickBottomItemFlag) {
+                clickBottomItemFlag = true
+
+                lifecycleScope.launch {
+                    delay(200)
+                    clickBottomItemFlag = false
+                }
+            } else if (appViewModel.controller?.isAllowRefreshing() == true) {
+                appViewModel.controller?.onReturnTop()
+            }
+        }
+        currentFragmentId = fragmentId
+    }
+
+    private fun setupWithNavController(
+        navigationBarView: NavigationBarView,
+        navController: NavController
+    ) {
+        navigationBarView.setOnItemSelectedListener { item ->
+            performClickNavigationItem(item.itemId)
+            NavigationUI.onNavDestinationSelected(
+                item,
+                navController
+            )
+        }
+        val weakReference = WeakReference(navigationBarView)
+        navController.addOnDestinationChangedListener(
+            object : NavController.OnDestinationChangedListener {
+                override fun onDestinationChanged(
+                    controller: NavController,
+                    destination: NavDestination,
+                    arguments: Bundle?
+                ) {
+                    val view = weakReference.get()
+                    if (view == null) {
+                        navController.removeOnDestinationChangedListener(this)
+                        return
+                    }
+                    view.menu.forEach { item ->
+                        if (destination.hierarchy.any { h -> h.id == item.itemId }) {
+                            item.isChecked = true
+                        }
+                    }
+                }
+            })
     }
 }

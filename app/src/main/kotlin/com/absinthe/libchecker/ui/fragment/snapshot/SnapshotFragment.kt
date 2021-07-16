@@ -51,9 +51,7 @@ import rikka.widget.borderview.BorderView
 const val VF_LOADING = 0
 const val VF_LIST = 1
 
-class SnapshotFragment : BaseListControllerFragment<FragmentSnapshotBinding>(
-    R.layout.fragment_snapshot
-) {
+class SnapshotFragment : BaseListControllerFragment<FragmentSnapshotBinding>() {
 
     private val viewModel by activityViewModels<SnapshotViewModel>()
     private val adapter by unsafeLazy { SnapshotAdapter(lifecycleScope) }
@@ -96,8 +94,8 @@ class SnapshotFragment : BaseListControllerFragment<FragmentSnapshotBinding>(
         }
     }
 
-    override fun initBinding(view: View): FragmentSnapshotBinding =
-        FragmentSnapshotBinding.bind(view)
+    override fun initBinding(inflater: LayoutInflater): FragmentSnapshotBinding =
+        FragmentSnapshotBinding.inflate(inflater)
 
     override fun init() {
         setHasOptionsMenu(true)
@@ -178,6 +176,9 @@ class SnapshotFragment : BaseListControllerFragment<FragmentSnapshotBinding>(
                         )
                     )
                 startActivity(intent)
+            }
+            if (!hasObservers()) {
+                setHasStableIds(true)
             }
         }
 

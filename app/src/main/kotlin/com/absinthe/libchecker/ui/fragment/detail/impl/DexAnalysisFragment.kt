@@ -1,6 +1,6 @@
 package com.absinthe.libchecker.ui.fragment.detail.impl
 
-import android.view.View
+import android.view.LayoutInflater
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.absinthe.libchecker.R
 import com.absinthe.libchecker.annotation.LibType
@@ -17,9 +17,9 @@ import com.absinthe.libchecker.utils.showToast
 import com.absinthe.libraries.utils.utils.AntiShakeUtils
 import rikka.core.util.ClipboardUtils
 
-class DexAnalysisFragment : BaseDetailFragment<FragmentLibComponentBinding>(R.layout.fragment_lib_component) {
+class DexAnalysisFragment : BaseDetailFragment<FragmentLibComponentBinding>() {
 
-    override fun initBinding(view: View): FragmentLibComponentBinding = FragmentLibComponentBinding.bind(view)
+    override fun initBinding(inflater: LayoutInflater): FragmentLibComponentBinding = FragmentLibComponentBinding.inflate(inflater)
 
     override fun getRecyclerView() = binding.list
 

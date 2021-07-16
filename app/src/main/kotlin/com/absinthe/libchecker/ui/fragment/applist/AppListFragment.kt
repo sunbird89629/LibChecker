@@ -50,9 +50,7 @@ const val VF_LOADING = 0
 const val VF_LIST = 1
 const val VF_INIT = 2
 
-class AppListFragment :
-    BaseListControllerFragment<FragmentAppListBinding>(R.layout.fragment_app_list),
-    SearchView.OnQueryTextListener {
+class AppListFragment : BaseListControllerFragment<FragmentAppListBinding>(), SearchView.OnQueryTextListener {
 
     private val mAdapter by unsafeLazy { AppAdapter(lifecycleScope) }
     private var isFirstLaunch = !Once.beenDone(Once.THIS_APP_INSTALL, OnceTag.FIRST_LAUNCH)
@@ -60,7 +58,7 @@ class AppListFragment :
 
     private lateinit var layoutManager: RecyclerView.LayoutManager
 
-    override fun initBinding(view: View): FragmentAppListBinding = FragmentAppListBinding.bind(view)
+    override fun initBinding(inflater: LayoutInflater): FragmentAppListBinding = FragmentAppListBinding.inflate(inflater)
 
     override fun init() {
         setHasOptionsMenu(true)
@@ -85,7 +83,9 @@ class AppListFragment :
                 startActivity(intent)
             }
             setDiffCallback(AppListDiffUtil())
-            setHasStableIds(true)
+            if (!hasObservers()) {
+                setHasStableIds(true)
+            }
         }
 
         binding.apply {

@@ -91,7 +91,11 @@ class AppAdapter(val lifecycleScope: LifecycleCoroutineScope) : BaseQuickAdapter
     }
 
     override fun getItemId(position: Int): Long {
-        return data[position].hashCode().toLong()
+        return if (data.isEmpty()) {
+            0
+        } else {
+            data[position].hashCode().toLong()
+        }
     }
 
     fun release() {

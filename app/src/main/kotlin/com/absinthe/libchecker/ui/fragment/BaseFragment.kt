@@ -1,12 +1,16 @@
 package com.absinthe.libchecker.ui.fragment
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.viewbinding.ViewBinding
 import timber.log.Timber
 
-abstract class BaseFragment<T : ViewBinding>(layoutId: Int) : Fragment(layoutId) {
+abstract class BaseFragment<T : ViewBinding> : Fragment() {
 
     private var _binding: T? = null
     val binding get() = _binding!!
@@ -15,14 +19,18 @@ abstract class BaseFragment<T : ViewBinding>(layoutId: Int) : Fragment(layoutId)
     private var visible = false
     private var localParentFragment: BaseFragment<T>? = null
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        Timber.d("${javaClass.simpleName} ==> onViewCreated")
-        _binding = initBinding(view)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        Timber.d("${javaClass.simpleName} ==> onCreateView")
+        _binding = initBinding(inflater)
         init()
+        return binding.root
     }
 
-    abstract fun initBinding(view: View): T
+    abstract fun initBinding(inflater: LayoutInflater): T
     abstract fun init()
 
     open fun onVisibilityChanged(visible: Boolean) {
@@ -47,4 +55,7 @@ abstract class BaseFragment<T : ViewBinding>(layoutId: Int) : Fragment(layoutId)
         onVisibilityChanged(false)
     }
 
+    fun getNavController(): NavController {
+        return NavHostFragment.findNavController(this)
+    }
 }

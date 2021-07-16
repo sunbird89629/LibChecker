@@ -1,6 +1,6 @@
 package com.absinthe.libchecker.ui.fragment.detail.impl
 
-import android.view.View
+import android.view.LayoutInflater
 import com.absinthe.libchecker.R
 import com.absinthe.libchecker.annotation.LibType
 import com.absinthe.libchecker.databinding.FragmentLibNativeBinding
@@ -16,9 +16,9 @@ import com.absinthe.libchecker.utils.showToast
 import com.absinthe.libraries.utils.utils.AntiShakeUtils
 import rikka.core.util.ClipboardUtils
 
-class NativeAnalysisFragment : BaseDetailFragment<FragmentLibNativeBinding>(R.layout.fragment_lib_native) {
+class NativeAnalysisFragment : BaseDetailFragment<FragmentLibNativeBinding>() {
 
-    override fun initBinding(view: View): FragmentLibNativeBinding = FragmentLibNativeBinding.bind(view)
+    override fun initBinding(inflater: LayoutInflater): FragmentLibNativeBinding = FragmentLibNativeBinding.inflate(inflater)
 
     override fun getRecyclerView() = binding.list
 

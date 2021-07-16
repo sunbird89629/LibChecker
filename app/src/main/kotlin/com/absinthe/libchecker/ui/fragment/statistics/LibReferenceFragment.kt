@@ -38,17 +38,15 @@ import rikka.widget.borderview.BorderView
 const val VF_LOADING = 0
 const val VF_LIST = 1
 
-class LibReferenceFragment :
-    BaseListControllerFragment<FragmentLibReferenceBinding>(R.layout.fragment_lib_reference),
-    SearchView.OnQueryTextListener {
+class LibReferenceFragment : BaseListControllerFragment<FragmentLibReferenceBinding>(), SearchView.OnQueryTextListener {
 
     private val adapter = LibReferenceAdapter()
     private var popup: PopupMenu? = null
     private var category = GlobalValues.currentLibRefType
     private lateinit var layoutManager: LinearLayoutManager
 
-    override fun initBinding(view: View): FragmentLibReferenceBinding =
-        FragmentLibReferenceBinding.bind(view)
+    override fun initBinding(inflater: LayoutInflater): FragmentLibReferenceBinding =
+        FragmentLibReferenceBinding.inflate(inflater)
 
     override fun init() {
         setHasOptionsMenu(true)
@@ -115,6 +113,9 @@ class LibReferenceFragment :
                     it.gravity = Gravity.CENTER
                 }
             })
+            if (!hasObservers()) {
+                setHasStableIds(true)
+            }
         }
 
         homeViewModel.apply {

@@ -1,13 +1,15 @@
 package com.absinthe.libchecker.ui.fragment
 
+import android.os.Bundle
 import android.view.Menu
+import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.viewbinding.ViewBinding
 import com.absinthe.libchecker.BaseActivity
 import com.absinthe.libchecker.viewmodel.HomeViewModel
 import rikka.widget.borderview.BorderViewDelegate
 
-abstract class BaseListControllerFragment<T : ViewBinding>(layoutId: Int) : BaseFragment<T>(layoutId), IListController {
+abstract class BaseListControllerFragment<T : ViewBinding> : BaseFragment<T>(), IListController {
 
     protected var borderDelegate: BorderViewDelegate? = null
     protected val homeViewModel by activityViewModels<HomeViewModel>()
@@ -22,6 +24,13 @@ abstract class BaseListControllerFragment<T : ViewBinding>(layoutId: Int) : Base
                 homeViewModel.controller = this
                 requireActivity().invalidateOptionsMenu()
             }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            requireActivity().finish()
         }
     }
 

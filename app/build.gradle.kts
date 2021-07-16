@@ -10,6 +10,7 @@ plugins {
     kotlin("kapt")
     id("kotlin-parcelize")
     id("com.google.protobuf")
+    id("androidx.navigation.safeargs")
 }
 
 android {
@@ -144,6 +145,7 @@ dependencies {
 
     implementation("androidx.fragment:fragment-ktx:1.3.5")
     implementation("androidx.activity:activity-ktx:1.2.3")
+
     // Lifecycle
     val lifecycleVersion = "2.3.1"
     implementation("androidx.lifecycle:lifecycle-common-java8:${lifecycleVersion}")
@@ -157,6 +159,11 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("org.xerial:sqlite-jdbc:3.36.0.1") //Work around on Apple Silicon
     kapt("androidx.room:room-compiler:$roomVersion")
+
+    // Navigation
+    val navVersion = "2.4.0-alpha03"
+    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
 
     implementation("androidx.constraintlayout:constraintlayout:2.0.4")
     implementation("androidx.browser:browser:1.3.0")

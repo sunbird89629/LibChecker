@@ -70,4 +70,12 @@ class LibReferenceAdapter : BaseQuickAdapter<LibReference, BaseViewHolder>(0) {
             }
         }
     }
+
+    override fun getItemId(position: Int): Long {
+        return if (data.isEmpty()) {
+            0
+        } else {
+            data[position].hashCode().toLong()
+        }
+    }
 }
